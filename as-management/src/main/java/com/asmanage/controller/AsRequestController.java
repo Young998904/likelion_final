@@ -3,6 +3,7 @@ package com.asmanage.controller;
 import com.asmanage.domain.AsStatus;
 import com.asmanage.dto.AsRequestForm;
 import com.asmanage.repository.EmployeeRepository;
+import com.asmanage.repository.ProductRepository;
 import com.asmanage.repository.RepairPresetRepository;
 import com.asmanage.service.AsRequestService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class AsRequestController {
     private final AsRequestService asRequestService;
     private final RepairPresetRepository repairPresetRepository;
     private final EmployeeRepository employeeRepository;
+    private final ProductRepository productRepository;
 
     /** 접수 목록(상태/고객명/담당자 필터). */
     @GetMapping
@@ -42,6 +44,8 @@ public class AsRequestController {
     @GetMapping("/new")
     public String newForm(Model model) {
         model.addAttribute("form", new AsRequestForm());
+        // 제품은 목록에서 바로 선택할 수 있도록 전체 목록 전달
+        model.addAttribute("allProducts", productRepository.findAll());
         return "as/form";
     }
 

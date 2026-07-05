@@ -24,27 +24,27 @@
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">수리중</div>
-                    <div class="summary-value" th:text="${data.repairing}">0</div>
+                    <div class="summary-value v-repairing" th:text="${data.repairing}">0</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">입금대기</div>
-                    <div class="summary-value" th:text="${data.awaitingPayment}">0</div>
+                    <div class="summary-value v-awaiting_payment" th:text="${data.awaitingPayment}">0</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">배송대기</div>
-                    <div class="summary-value" th:text="${data.awaitingDelivery}">0</div>
+                    <div class="summary-value v-awaiting_delivery" th:text="${data.awaitingDelivery}">0</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">완료</div>
-                    <div class="summary-value" th:text="${data.completed}">0</div>
+                    <div class="summary-value v-completed" th:text="${data.completed}">0</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">미입금</div>
-                    <div class="summary-value" th:text="${data.unpaid}">0</div>
+                    <div class="summary-value v-unpaid" th:text="${data.unpaid}">0</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">완료 매출</div>
-                    <div class="summary-value" th:text="${#numbers.formatInteger(data.totalRevenue, 0, 'COMMA')} + '원'">0원</div>
+                    <div class="summary-value v-revenue" th:text="${#numbers.formatInteger(data.totalRevenue, 0, 'COMMA')} + '원'">0원</div>
                 </div>
             </section>
 
@@ -52,11 +52,11 @@
             <section class="chart-row">
                 <div class="panel">
                     <h2>상태별 분포</h2>
-                    <canvas id="statusChart" height="220"></canvas>
+                    <div class="chart-box"><canvas id="statusChart"></canvas></div>
                 </div>
                 <div class="panel">
                     <h2>월별 접수 / 완료 추이</h2>
-                    <canvas id="trendChart" height="220"></canvas>
+                    <div class="chart-box"><canvas id="trendChart"></canvas></div>
                 </div>
             </section>
         </main>
@@ -84,7 +84,7 @@
                 backgroundColor: ['#c5cbd6', '#8b7ef0', '#e6b45a', '#5a92e0', '#3fbf8f']
             }]
         },
-        options: { plugins: { legend: { position: 'bottom' } } }
+        options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 
     // 월별 접수/완료 추이(막대)
@@ -98,6 +98,7 @@
             ]
         },
         options: {
+            maintainAspectRatio: false,
             plugins: { legend: { position: 'bottom' } },
             scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
         }

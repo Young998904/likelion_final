@@ -150,8 +150,9 @@
     color: var(--color-danger);
 }
 
-.field input,
-.field textarea {
+.field input:not([type="checkbox"]),
+.field textarea,
+.field select {
     width: 100%;
     padding: 10px 12px;
     font-family: inherit;
@@ -161,9 +162,32 @@
     outline: none;
 }
 
-.field input:focus,
-.field textarea:focus {
+.field input:not([type="checkbox"]):focus,
+.field textarea:focus,
+.field select:focus {
     border-color: var(--color-primary);
+}
+
+/* 체크박스 행: 체크박스와 라벨을 한 줄로 자연스럽게 정렬 */
+.check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-text);
+    cursor: pointer;
+}
+.check-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex-shrink: 0;
+}
+.check-hint {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--color-muted);
 }
 
 .field-error {
@@ -308,4 +332,23 @@
     .chart-row {
         grid-template-columns: 1fr;
     }
+}
+
+/* 대시보드 요약 값: 줄바꿈 없이 화면 크기에 맞춰 축소 */
+.summary-value {
+    font-size: clamp(18px, 1.8vw, 26px);
+    white-space: nowrap;
+}
+/* 상태별 값 색상(카드에서 상태를 색으로 구분) */
+.summary-value.v-repairing { color: #5a4ad4; }
+.summary-value.v-awaiting_payment { color: #b6791b; }
+.summary-value.v-awaiting_delivery { color: #2f6bc0; }
+.summary-value.v-completed { color: #1d9e75; }
+.summary-value.v-unpaid { color: #d14343; }
+.summary-value.v-revenue { color: #1d9e75; }
+
+/* 대시보드 차트 높이 고정(너무 커지지 않도록) */
+.chart-box {
+    position: relative;
+    height: 260px;
 }

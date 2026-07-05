@@ -27,7 +27,7 @@
                     <div class="suggest-list" id="custSuggest" style="display:none;"></div>
                     <input type="hidden" th:field="*{customerId}">
                     <div class="picked" id="custPicked" style="display:none;"></div>
-                    <label style="margin-top:8px;font-weight:400;">
+                    <label class="check-row" style="margin-top:10px;">
                         <input type="checkbox" id="newCustToggle"> 신규 고객으로 등록
                     </label>
                 </div>
@@ -41,12 +41,17 @@
 
                 <!-- 제품 -->
                 <div class="field suggest-box">
-                    <label>제품 <span class="req">*</span> <span style="font-weight:300;color:var(--color-muted)">(제품명/모델코드로 검색)</span></label>
+                    <label>제품 <span class="req">*</span> <span style="font-weight:300;color:var(--color-muted)">(검색 또는 목록에서 선택)</span></label>
                     <input type="text" id="prodSearch" placeholder="제품명 또는 모델코드 입력" autocomplete="off">
                     <div class="suggest-list" id="prodSuggest" style="display:none;"></div>
+                    <select id="prodSelect" style="margin-top:8px;">
+                        <option value="">— 목록에서 제품 선택 —</option>
+                        <option th:each="p : ${allProducts}" th:value="${p.id}"
+                                th:text="${p.name} + (${p.modelCode} != null ? ' [' + ${p.modelCode} + ']' : '')">제품</option>
+                    </select>
                     <input type="hidden" th:field="*{productId}">
                     <div class="picked" id="prodPicked" style="display:none;"></div>
-                    <label style="margin-top:8px;font-weight:400;">
+                    <label class="check-row" style="margin-top:10px;">
                         <input type="checkbox" id="newProdToggle"> 신규 제품으로 등록
                     </label>
                 </div>
@@ -140,8 +145,23 @@
     $('#newProdToggle').on('change', function () {
         var on = this.checked;
         $('#newProdBlock').toggle(on);
-        if (on) { $('#productId').val(''); $('#prodPicked').hide(); $('#prodSearch').val(''); }
+        if (on) { $('#productId').val(''); $('#prodPicked').hide(); $('#prodSearch').val(''); $('#prodSelect').val(''); }
     });
+
+    // 제품을 목록에서 직접 선택
+    $('#prodSelect').on('change', function () {
+        var id = $(this).val();
+        if (!id) { $('#productId').val(''); $('#prodPicked').hide(); return; }
+        var text = $(this).find('option:selected').text();
+        $('#productId').val(id);
+        $('#prodSearch').val(text);
+        $('#prodPicked').text('선택됨: ' + text).show();
+        $('#prodSuggest').hide().empty();
+        $('#newProdToggle').prop('checked', false);
+        $('#newProdBlock').hide();
+    });
+    // 검색어를 다시 입력하면 목록 선택 해제
+    $('#prodSearch').on('input', function () { $('#prodSelect').val(''); });
 
     // 다음(카카오) 우편번호 검색
     function openPostcode() {

@@ -53,7 +53,8 @@
                 </div>
 
                 <div class="field">
-                    <label><input type="checkbox" th:field="*{active}"> 활성 계정</label>
+                    <label class="check-row"><input type="checkbox" th:field="*{active}"> 활성 계정</label>
+                    <div class="check-hint">체크하면 로그인 가능, 해제하면 비활성(로그인 차단)됩니다.</div>
                 </div>
 
                 <div class="form-actions">
