@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!-- 좌측 사이드바 (active: 현재 화면 키) -->
+<aside th:fragment="sidebar(active)" class="sidebar">
+    <div class="sidebar-brand">A/S 관리</div>
+    <nav class="sidebar-nav">
+        <a class="nav-item" th:classappend="${active == 'dashboard'} ? 'active'" th:href="@{/dashboard}">대시보드</a>
+        <a class="nav-item" th:classappend="${active == 'as'} ? 'active'" th:href="@{/as}">A/S 접수</a>
+        <!-- 관리 화면은 최고관리자에게만 표시 -->
+        <a class="nav-item" th:classappend="${active == 'customers'} ? 'active'"
+           th:href="@{/admin/customers}" sec:authorize="hasRole('ADMIN')">고객 관리</a>
+        <a class="nav-item" th:classappend="${active == 'products'} ? 'active'"
+           th:href="@{/admin/products}" sec:authorize="hasRole('ADMIN')">제품 관리</a>
+        <a class="nav-item" th:classappend="${active == 'presets'} ? 'active'"
+           th:href="@{/admin/presets}" sec:authorize="hasRole('ADMIN')">수리내역 프리셋</a>
+        <a class="nav-item" href="#" sec:authorize="hasRole('ADMIN')">직원 계정</a>
+    </nav>
+</aside>
+
+<!-- 상단 바 (title: 화면 제목) -->
+<header th:fragment="topbar(title)" class="topbar">
+    <div class="topbar-title" th:text="${title}">제목</div>
+    <div class="topbar-right">
+        <span class="user-info"><span sec:authentication="name">아이디</span>님</span>
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="btn-text">로그아웃</button>
+        </form>
+    </div>
+</header>
+
+</body>
+</html>

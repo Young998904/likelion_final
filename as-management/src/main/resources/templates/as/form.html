@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>새 접수 등록 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('as')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('A/S 접수')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title">새 접수 등록</h1>
+            </div>
+
+            <form class="form-card" th:action="@{/as}" th:object="${form}" method="post">
+
+                <!-- 고객 -->
+                <div class="field suggest-box">
+                    <label>고객 <span class="req">*</span> <span style="font-weight:300;color:var(--color-muted)">(이름/연락처로 검색)</span></label>
+                    <input type="text" id="custSearch" placeholder="고객명 또는 연락처 입력" autocomplete="off">
+                    <div class="suggest-list" id="custSuggest" style="display:none;"></div>
+                    <input type="hidden" th:field="*{customerId}">
+                    <div class="picked" id="custPicked" style="display:none;"></div>
+                    <label style="margin-top:8px;font-weight:400;">
+                        <input type="checkbox" id="newCustToggle"> 신규 고객으로 등록
+                    </label>
+                </div>
+                <div id="newCustBlock" style="display:none;padding-left:2px;">
+                    <div class="field"><label>고객명</label><input type="text" th:field="*{newCustomerName}"></div>
+                    <div class="field"><label>연락처</label><input type="text" th:field="*{newCustomerPhone}" placeholder="010-1234-5678"></div>
+                    <div class="field"><label>우편번호</label><input type="text" th:field="*{newCustomerZipcode}"></div>
+                    <div class="field"><label>주소</label><input type="text" th:field="*{newCustomerAddress}"></div>
+                    <div class="field"><label>상세주소</label><input type="text" th:field="*{newCustomerAddressDetail}"></div>
+                </div>
+
+                <!-- 제품 -->
+                <div class="field suggest-box">
+                    <label>제품 <span class="req">*</span> <span style="font-weight:300;color:var(--color-muted)">(제품명/모델코드로 검색)</span></label>
+                    <input type="text" id="prodSearch" placeholder="제품명 또는 모델코드 입력" autocomplete="off">
+                    <div class="suggest-list" id="prodSuggest" style="display:none;"></div>
+                    <input type="hidden" th:field="*{productId}">
+                    <div class="picked" id="prodPicked" style="display:none;"></div>
+                    <label style="margin-top:8px;font-weight:400;">
+                        <input type="checkbox" id="newProdToggle"> 신규 제품으로 등록
+                    </label>
+                </div>
+                <div id="newProdBlock" style="display:none;padding-left:2px;">
+                    <div class="field"><label>제품명</label><input type="text" th:field="*{newProductName}"></div>
+                    <div class="field"><label>모델코드</label><input type="text" th:field="*{newProductModelCode}"></div>
+                </div>
+
+                <!-- 요청 내용 -->
+                <div class="field">
+                    <label>요청 내용</label>
+                    <textarea th:field="*{requestContent}" rows="3" placeholder="고객 요청 사항"></textarea>
+                </div>
+
+                <!-- 배송지 (기본값은 선택한 고객 주소, 수정 가능) -->
+                <div class="field">
+                    <label>배송지 우편번호</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" th:field="*{deliveryZipcode}" style="flex:1;">
+                        <button type="button" class="btn" onclick="openPostcode()">우편번호 찾기</button>
+                    </div>
+                </div>
+                <div class="field"><label>배송지 주소</label><input type="text" th:field="*{deliveryAddress}"></div>
+                <div class="field"><label>배송지 상세주소</label><input type="text" th:field="*{deliveryAddressDetail}"></div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">접수 등록</button>
+                    <a class="btn" th:href="@{/as}">취소</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    // 공통 자동완성 설정
+    function setupAutocomplete(opts) {
+        var timer = null;
+        $(opts.input).on('input', function () {
+            $(opts.hidden).val('');           // 직접 타이핑하면 선택 해제
+            $(opts.picked).hide();
+            var q = $(this).val().trim();
+            clearTimeout(timer);
+            if (q.length < 1) { $(opts.list).hide().empty(); return; }
+            timer = setTimeout(function () {
+                $.getJSON(opts.url, {q: q}, function (rows) {
+                    var $list = $(opts.list).empty();
+                    if (!rows.length) { $list.hide(); return; }
+                    rows.forEach(function (row) {
+                        $('<div>').text(opts.label(row)).on('click', function () {
+                            opts.onPick(row);
+                            $(opts.hidden).val(row.id);
+                            $(opts.input).val(opts.label(row));
+                            $(opts.picked).text('선택됨: ' + opts.label(row)).show();
+                            $list.hide().empty();
+                        }).appendTo($list);
+                    });
+                    $list.show();
+                });
+            }, 200);
+        });
+    }
+
+    setupAutocomplete({
+        input: '#custSearch', list: '#custSuggest', hidden: '#customerId', picked: '#custPicked',
+        url: '/api/customers/search',
+        label: function (r) { return r.name + ' (' + r.phone + ')'; },
+        onPick: function (r) {
+            // 배송지를 선택한 고객 주소로 기본 채움
+            $('#deliveryZipcode').val(r.zipcode || '');
+            $('#deliveryAddress').val(r.address || '');
+            $('#deliveryAddressDetail').val(r.addressDetail || '');
+        }
+    });
+
+    setupAutocomplete({
+        input: '#prodSearch', list: '#prodSuggest', hidden: '#productId', picked: '#prodPicked',
+        url: '/api/products/search',
+        label: function (r) { return r.name + (r.modelCode ? ' [' + r.modelCode + ']' : ''); },
+        onPick: function () {}
+    });
+
+    // 신규 등록 토글: 체크 시 인라인 입력 블록 표시 + 기존 선택 해제
+    $('#newCustToggle').on('change', function () {
+        var on = this.checked;
+        $('#newCustBlock').toggle(on);
+        if (on) { $('#customerId').val(''); $('#custPicked').hide(); $('#custSearch').val(''); }
+    });
+    $('#newProdToggle').on('change', function () {
+        var on = this.checked;
+        $('#newProdBlock').toggle(on);
+        if (on) { $('#productId').val(''); $('#prodPicked').hide(); $('#prodSearch').val(''); }
+    });
+
+    // 다음(카카오) 우편번호 검색
+    function openPostcode() {
+        new daum.Postcode({
+            oncomplete: function (data) {
+                $('#deliveryZipcode').val(data.zonecode);
+                $('#deliveryAddress').val(data.roadAddress || data.jibunAddress);
+                $('#deliveryAddressDetail').focus();
+            }
+        }).open();
+    }
+</script>
+</body>
+</html>

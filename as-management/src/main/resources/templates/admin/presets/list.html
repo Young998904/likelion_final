@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수리내역 프리셋 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('presets')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('수리내역 프리셋')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title">수리내역 프리셋</h1>
+                <a class="btn primary" th:href="@{/admin/presets/new}">+ 새 프리셋 등록</a>
+            </div>
+
+            <div class="flash success" th:if="${message}" th:text="${message}"></div>
+            <div class="flash error" th:if="${error}" th:text="${error}"></div>
+
+            <table class="data-table" th:unless="${presets.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>수리내역 명칭</th>
+                    <th>금액</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${presets}">
+                    <td th:text="${p.name}">명칭</td>
+                    <td class="num" th:text="${#numbers.formatInteger(p.price, 0, 'COMMA')} + '원'">0원</td>
+                    <td class="actions">
+                        <a class="btn sm" th:href="@{/admin/presets/{id}/edit(id=${p.id})}">수정</a>
+                        <form th:action="@{/admin/presets/{id}/delete(id=${p.id})}" method="post"
+                              onsubmit="return confirm('이 프리셋을 삭제하시겠습니까?');">
+                            <button type="submit" class="btn sm danger">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="table-empty" th:if="${presets.isEmpty()}">등록된 프리셋이 없습니다.</div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

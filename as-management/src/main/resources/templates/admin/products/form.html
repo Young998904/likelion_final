@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제품 등록/수정 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('products')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('제품 관리')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title" th:text="${form.id == null} ? '새 제품 등록' : '제품 수정'">제품</h1>
+            </div>
+
+            <form class="form-card" th:action="@{/admin/products/save}" th:object="${form}" method="post">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="field">
+                    <label>제품명 <span class="req">*</span></label>
+                    <input type="text" th:field="*{name}" placeholder="예: 노트북 X1">
+                    <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+
+                <div class="field">
+                    <label>모델코드</label>
+                    <input type="text" th:field="*{modelCode}" placeholder="예: NB-X1-2024">
+                </div>
+
+                <div class="field">
+                    <label>비고</label>
+                    <textarea th:field="*{note}" rows="3" placeholder="특이사항"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">저장</button>
+                    <a class="btn" th:href="@{/admin/products}">취소</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+</body>
+</html>

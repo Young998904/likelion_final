@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프리셋 등록/수정 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('presets')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('수리내역 프리셋')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title" th:text="${form.id == null} ? '새 프리셋 등록' : '프리셋 수정'">프리셋</h1>
+            </div>
+
+            <form class="form-card" th:action="@{/admin/presets/save}" th:object="${form}" method="post">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="field">
+                    <label>수리내역 명칭 <span class="req">*</span></label>
+                    <input type="text" th:field="*{name}" placeholder="예: 액정 교체">
+                    <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+
+                <div class="field">
+                    <label>금액(원) <span class="req">*</span></label>
+                    <input type="number" th:field="*{price}" min="0" placeholder="예: 120000">
+                    <div class="field-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">저장</button>
+                    <a class="btn" th:href="@{/admin/presets}">취소</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대시보드 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('dashboard')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('대시보드')}"></header>
+        <main class="content">
+            <h1 class="page-title">대시보드</h1>
+
+            <!-- 상태 요약 카드 -->
+            <section class="card-grid">
+                <div class="summary-card accent">
+                    <div class="summary-label">전체 접수</div>
+                    <div class="summary-value" th:text="${totalCount}">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">수리중</div>
+                    <div class="summary-value" th:text="${repairingCount}">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">완료</div>
+                    <div class="summary-value" th:text="${completedCount}">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">미입금</div>
+                    <div class="summary-value" th:text="${unpaidCount}">0</div>
+                </div>
+            </section>
+
+            <p class="notice">※ 고객·제품·프리셋 관리는 좌측 메뉴(최고관리자)에서 이용할 수 있습니다. A/S 접수 흐름은 다음 단계에서 추가됩니다.</p>
+        </main>
+    </div>
+</div>
+</body>
+</html>

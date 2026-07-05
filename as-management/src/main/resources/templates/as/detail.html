@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'접수 #' + ${request.id} + ' - 통합 A/S 관리 시스템'">접수 상세</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('as')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('A/S 접수')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title">
+                    접수 <span th:text="'#' + ${request.id}">#1</span>
+                    <span class="badge" th:classappend="${'s-' + #strings.toLowerCase(request.status)}"
+                          th:text="${request.status.label}">상태</span>
+                </h1>
+                <a class="btn" th:href="@{/as}">목록으로</a>
+            </div>
+
+            <div class="flash success" th:if="${message}" th:text="${message}"></div>
+            <div class="flash error" th:if="${error}" th:text="${error}"></div>
+
+            <!-- 상태 진행 -->
+            <div class="stepline">
+                <div class="step" th:classappend="${request.status.ordinal() >= 0} ? 'done'">접수</div>
+                <div class="step" th:classappend="${request.status.ordinal() >= 1} ? 'done'">수리중</div>
+                <div class="step" th:classappend="${request.status.ordinal() >= 2} ? 'done'">입금대기</div>
+                <div class="step" th:classappend="${request.status.ordinal() >= 3} ? 'done'">배송대기</div>
+                <div class="step" th:classappend="${request.status.ordinal() >= 4} ? 'done'">완료</div>
+            </div>
+
+            <div class="detail-grid">
+                <!-- 좌측 -->
+                <div>
+                    <!-- 접수 정보 -->
+                    <div class="panel">
+                        <h2>접수 정보</h2>
+                        <div class="info-row"><span class="label">고객</span>
+                            <span th:text="${request.customer.name} + ' (' + ${request.customer.phone} + ')'">고객</span></div>
+                        <div class="info-row"><span class="label">제품</span>
+                            <span th:text="${request.product.name} + (${request.product.modelCode != null} ? ' [' + ${request.product.modelCode} + ']' : '')">제품</span></div>
+                        <div class="info-row"><span class="label">요청 내용</span>
+                            <span th:text="${request.requestContent != null and !request.requestContent.isEmpty()} ? ${request.requestContent} : '-'">내용</span></div>
+                        <div class="info-row"><span class="label">배송지</span>
+                            <span th:text="${(request.deliveryZipcode != null ? '(' + request.deliveryZipcode + ') ' : '') + (request.deliveryAddress != null ? request.deliveryAddress : '') + ' ' + (request.deliveryAddressDetail != null ? request.deliveryAddressDetail : '')}">주소</span></div>
+                    </div>
+
+                    <!-- 수리내역 -->
+                    <div class="panel">
+                        <h2>수리내역</h2>
+                        <table class="data-table" th:unless="${request.repairItems.isEmpty()}">
+                            <thead><tr><th>항목</th><th>금액</th><th th:if="${request.status.ordinal() <= 1}"></th></tr></thead>
+                            <tbody>
+                            <tr th:each="item : ${request.repairItems}">
+                                <td th:text="${item.name}">항목</td>
+                                <td class="num" th:text="${#numbers.formatInteger(item.price, 0, 'COMMA')} + '원'">0원</td>
+                                <td class="actions" th:if="${request.status.ordinal() <= 1}">
+                                    <form class="inline-form" method="post"
+                                          th:action="@{/as/{id}/items/{itemId}/delete(id=${request.id}, itemId=${item.id})}">
+                                        <button type="submit" class="btn sm danger">삭제</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="table-empty" th:if="${request.repairItems.isEmpty()}">등록된 수리내역이 없습니다.</div>
+
+                        <div class="info-row" style="margin-top:12px;">
+                            <span class="label">합계 금액</span>
+                            <span class="total-amount" th:text="${#numbers.formatInteger(request.totalAmount, 0, 'COMMA')} + '원'">0원</span>
+                        </div>
+
+                        <!-- 수리내역 추가(접수/수리중 상태에서만) -->
+                        <div th:if="${request.status.ordinal() <= 1}">
+                            <form class="row-form" method="post" th:action="@{/as/{id}/items/preset(id=${request.id})}">
+                                <select name="presetId" required>
+                                    <option value="">프리셋 선택</option>
+                                    <option th:each="p : ${presets}" th:value="${p.id}"
+                                            th:text="${p.name} + ' (' + ${#numbers.formatInteger(p.price,0,'COMMA')} + '원)'">프리셋</option>
+                                </select>
+                                <button type="submit" class="btn">프리셋 추가</button>
+                            </form>
+                            <form class="row-form" method="post" th:action="@{/as/{id}/items/manual(id=${request.id})}">
+                                <input type="text" name="name" placeholder="수동 항목명" required>
+                                <input type="number" name="price" placeholder="금액" min="0" required style="width:120px;">
+                                <button type="submit" class="btn">수동 추가</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 처리 -->
+                    <div class="panel" th:unless="${request.status.name() == 'COMPLETED'}">
+                        <h2>처리</h2>
+
+                        <!-- 담당자 지정 -->
+                        <form class="row-form" method="post" th:action="@{/as/{id}/assign(id=${request.id})}">
+                            <label class="label" style="font-size:13px;">담당자</label>
+                            <select name="employeeId" required>
+                                <option value="">담당자 선택</option>
+                                <option th:each="e : ${employees}" th:value="${e.id}" th:text="${e.name}"
+                                        th:selected="${request.assignee != null and request.assignee.id == e.id}">담당자</option>
+                            </select>
+                            <button type="submit" class="btn">담당자 지정</button>
+                        </form>
+
+                        <!-- 상태 전이 액션 -->
+                        <div style="margin-top:14px;" th:switch="${request.status.name()}">
+                            <form th:case="'RECEIVED'" method="post" th:action="@{/as/{id}/start(id=${request.id})}">
+                                <button type="submit" class="btn primary">수리 시작 (→ 수리중)</button>
+                            </form>
+                            <form th:case="'REPAIRING'" method="post" th:action="@{/as/{id}/request-payment(id=${request.id})}">
+                                <button type="submit" class="btn primary">입금 요청 (→ 입금대기)</button>
+                            </form>
+                            <form th:case="'AWAITING_PAYMENT'" method="post" th:action="@{/as/{id}/confirm-payment(id=${request.id})}">
+                                <button type="submit" class="btn primary">입금 확인 (→ 배송대기)</button>
+                            </form>
+                            <div th:case="'AWAITING_DELIVERY'">
+                                <form class="row-form" method="post" th:action="@{/as/{id}/tracking(id=${request.id})}">
+                                    <input type="text" name="courier" placeholder="택배사(선택)">
+                                    <input type="text" name="trackingNo" placeholder="송장번호" required>
+                                    <button type="submit" class="btn">송장 등록</button>
+                                </form>
+                                <form method="post" th:action="@{/as/{id}/complete(id=${request.id})}" style="margin-top:10px;">
+                                    <button type="submit" class="btn primary">완료 처리</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 우측 -->
+                <div>
+                    <div class="panel">
+                        <h2>요약</h2>
+                        <div class="info-row"><span class="label">상태</span>
+                            <span class="badge" th:classappend="${'s-' + #strings.toLowerCase(request.status)}" th:text="${request.status.label}">상태</span></div>
+                        <div class="info-row"><span class="label">담당자</span>
+                            <span th:text="${request.assignee != null ? request.assignee.name : '미지정'}">담당자</span></div>
+                        <div class="info-row"><span class="label">청구 금액</span>
+                            <span th:text="${#numbers.formatInteger(request.totalAmount, 0, 'COMMA')} + '원'">0원</span></div>
+                        <div class="info-row"><span class="label">입금 여부</span>
+                            <span th:text="${request.paid} ? '입금완료' : '미입금'">-</span></div>
+                        <div class="info-row"><span class="label">송장번호</span>
+                            <span th:text="${request.trackingNo != null ? request.trackingNo : '-'}">-</span></div>
+                        <div class="info-row"><span class="label">접수일</span>
+                            <span th:text="${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}">-</span></div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>알림 로그</h2>
+                        <div class="table-empty" th:if="${notifications.isEmpty()}" style="padding:20px;">알림 이력이 없습니다.</div>
+                        <div th:each="n : ${notifications}" class="info-row" style="flex-direction:column;align-items:flex-start;gap:3px;">
+                            <span class="badge" th:text="${n.type.label}">유형</span>
+                            <span th:text="${n.message}">메시지</span>
+                            <span style="font-size:11px;color:var(--color-muted);" th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm')}">시간</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

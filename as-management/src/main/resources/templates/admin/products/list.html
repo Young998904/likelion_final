@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제품 관리 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('products')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('제품 관리')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title">제품 관리</h1>
+                <a class="btn primary" th:href="@{/admin/products/new}">+ 새 제품 등록</a>
+            </div>
+
+            <div class="flash success" th:if="${message}" th:text="${message}"></div>
+            <div class="flash error" th:if="${error}" th:text="${error}"></div>
+
+            <table class="data-table" th:unless="${products.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>제품명</th>
+                    <th>모델코드</th>
+                    <th>비고</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${products}">
+                    <td th:text="${p.name}">제품명</td>
+                    <td th:text="${p.modelCode}">모델코드</td>
+                    <td th:text="${p.note}">비고</td>
+                    <td class="actions">
+                        <a class="btn sm" th:href="@{/admin/products/{id}/edit(id=${p.id})}">수정</a>
+                        <form th:action="@{/admin/products/{id}/delete(id=${p.id})}" method="post"
+                              onsubmit="return confirm('이 제품을 삭제하시겠습니까?');">
+                            <button type="submit" class="btn sm danger">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="table-empty" th:if="${products.isEmpty()}">등록된 제품이 없습니다.</div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

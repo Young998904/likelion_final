@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객 관리 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('customers')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('고객 관리')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title">고객 관리</h1>
+                <a class="btn primary" th:href="@{/admin/customers/new}">+ 새 고객 등록</a>
+            </div>
+
+            <div class="flash success" th:if="${message}" th:text="${message}"></div>
+            <div class="flash error" th:if="${error}" th:text="${error}"></div>
+
+            <table class="data-table" th:unless="${customers.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>고객명</th>
+                    <th>연락처</th>
+                    <th>주소</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${customers}">
+                    <td th:text="${c.name}">고객명</td>
+                    <td th:text="${c.phone}">연락처</td>
+                    <td>
+                        <span th:text="${c.address}"></span>
+                        <span th:text="${c.addressDetail}"></span>
+                    </td>
+                    <td class="actions">
+                        <a class="btn sm" th:href="@{/admin/customers/{id}/edit(id=${c.id})}">수정</a>
+                        <form th:action="@{/admin/customers/{id}/delete(id=${c.id})}" method="post"
+                              onsubmit="return confirm('이 고객을 삭제하시겠습니까?');">
+                            <button type="submit" class="btn sm danger">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="table-empty" th:if="${customers.isEmpty()}">등록된 고객이 없습니다.</div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

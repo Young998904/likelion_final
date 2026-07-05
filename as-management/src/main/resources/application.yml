@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: as-management
+
+  # H2 내장 DB (파일 모드) - 별도 DB 서버 설치/구동 불필요
+  # 데이터는 as-management/data/asdb.mv.db 파일로 저장되어 앱을 껐다 켜도 유지된다.
+  # AUTO_SERVER=TRUE: 앱 실행 중에도 H2 콘솔 등에서 동시 접속 허용
+  datasource:
+    url: jdbc:h2:file:./data/asdb;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      # 스키마 자동 반영(데이터 보존)
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # H2 웹 콘솔(개발 편의) - http://localhost:8080/h2-console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # 서버 렌더링 화면은 개발 중 캐시 비활성화
+  thymeleaf:
+    cache: false
+
+# (참고) 추후 로컬 MySQL로 전환 시 위 datasource를 아래로 교체
+#   url: jdbc:mysql://localhost:3306/as_management?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+#   driver-class-name: com.mysql.cj.jdbc.Driver
+#   username: root
+#   password: (각자 비밀번호)

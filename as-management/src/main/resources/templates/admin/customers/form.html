@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객 등록/수정 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('customers')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('고객 관리')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title" th:text="${form.id == null} ? '새 고객 등록' : '고객 수정'">고객</h1>
+            </div>
+
+            <form class="form-card" th:action="@{/admin/customers/save}" th:object="${form}" method="post">
+                <!-- 수정 시 대상 식별용 id -->
+                <input type="hidden" th:field="*{id}">
+
+                <div class="field">
+                    <label>고객명 <span class="req">*</span></label>
+                    <input type="text" th:field="*{name}" placeholder="예: 김철수">
+                    <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+
+                <div class="field">
+                    <label>연락처 <span class="req">*</span></label>
+                    <input type="text" th:field="*{phone}" placeholder="010-1234-5678">
+                    <div class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                </div>
+
+                <div class="field">
+                    <label>우편번호</label>
+                    <input type="text" th:field="*{zipcode}" placeholder="06236">
+                </div>
+
+                <div class="field">
+                    <label>주소</label>
+                    <input type="text" th:field="*{address}" placeholder="서울시 강남구 …">
+                </div>
+
+                <div class="field">
+                    <label>상세주소</label>
+                    <input type="text" th:field="*{addressDetail}" placeholder="4층">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">저장</button>
+                    <a class="btn" th:href="@{/admin/customers}">취소</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+</body>
+</html>

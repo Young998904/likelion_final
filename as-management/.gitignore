@@ -1,0 +1,17 @@
+# Gradle
+.gradle/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 로그
+*.log
+
+# H2 데이터 파일
+data/
+
+# OS
+.DS_Store
