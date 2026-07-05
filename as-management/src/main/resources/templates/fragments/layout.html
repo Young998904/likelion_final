@@ -16,7 +16,8 @@
            th:href="@{/admin/products}" sec:authorize="hasRole('ADMIN')">제품 관리</a>
         <a class="nav-item" th:classappend="${active == 'presets'} ? 'active'"
            th:href="@{/admin/presets}" sec:authorize="hasRole('ADMIN')">수리내역 프리셋</a>
-        <a class="nav-item" href="#" sec:authorize="hasRole('ADMIN')">직원 계정</a>
+        <a class="nav-item" th:classappend="${active == 'employees'} ? 'active'"
+           th:href="@{/admin/employees}" sec:authorize="hasRole('ADMIN')">직원 계정</a>
     </nav>
 </aside>
 

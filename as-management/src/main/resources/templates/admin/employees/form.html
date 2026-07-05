@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>직원 계정 등록/수정 - 통합 A/S 관리 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('employees')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('직원 계정')}"></header>
+        <main class="content">
+            <div class="content-head">
+                <h1 class="page-title" th:text="${form.id == null} ? '새 계정 등록' : '계정 수정'">계정</h1>
+            </div>
+
+            <form class="form-card" th:action="@{/admin/employees/save}" th:object="${form}" method="post">
+                <input type="hidden" th:field="*{id}">
+
+                <!-- 아이디 중복·마지막 관리자 보호 등 처리 오류 -->
+                <div class="flash error" th:if="${formError}" th:text="${formError}"></div>
+
+                <div class="field">
+                    <label>아이디 <span class="req">*</span></label>
+                    <!-- 아이디는 등록 후 변경하지 않는다 -->
+                    <input type="text" th:field="*{username}" th:readonly="${form.id != null}" placeholder="영문/숫자">
+                    <div class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                </div>
+
+                <div class="field">
+                    <label>이름 <span class="req">*</span></label>
+                    <input type="text" th:field="*{name}">
+                    <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+
+                <div class="field">
+                    <label>비밀번호 <span class="req" th:if="${form.id == null}">*</span></label>
+                    <input type="password" th:field="*{password}"
+                           th:placeholder="${form.id == null} ? '초기 비밀번호' : '변경 시에만 입력(비우면 유지)'">
+                </div>
+
+                <div class="field">
+                    <label>권한 <span class="req">*</span></label>
+                    <select th:field="*{role}">
+                        <option th:each="r : ${roles}" th:value="${r}"
+                                th:text="${r.name() == 'ADMIN'} ? '최고관리자' : '일반 직원'">권한</option>
+                    </select>
+                    <div class="field-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></div>
+                </div>
+
+                <div class="field">
+                    <label><input type="checkbox" th:field="*{active}"> 활성 계정</label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">저장</button>
+                    <a class="btn" th:href="@{/admin/employees}">취소</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+</body>
+</html>
