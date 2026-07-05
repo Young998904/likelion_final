@@ -1,7 +1,6 @@
 package com.asmanage.controller;
 
-import com.asmanage.domain.AsStatus;
-import com.asmanage.repository.AsRequestRepository;
+import com.asmanage.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final AsRequestRepository asRequestRepository;
+    private final DashboardService dashboardService;
 
     /**
      * 루트 접근 시 대시보드로 이동.
@@ -33,14 +32,11 @@ public class HomeController {
     }
 
     /**
-     * 대시보드. 1단계에서는 상태별 요약 건수만 표시한다.
+     * 대시보드. 상태별 요약 통계와 차트용 데이터를 전달한다.
      */
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("totalCount", asRequestRepository.count());
-        model.addAttribute("repairingCount", asRequestRepository.countByStatus(AsStatus.REPAIRING));
-        model.addAttribute("completedCount", asRequestRepository.countByStatus(AsStatus.COMPLETED));
-        model.addAttribute("unpaidCount", asRequestRepository.countByPaidFalse());
+        model.addAttribute("data", dashboardService.load());
         return "dashboard";
     }
 }

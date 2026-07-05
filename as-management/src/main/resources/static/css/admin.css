@@ -288,3 +288,24 @@
     font-size: 13px;
     color: var(--color-success);
 }
+
+/* 대시보드: 카드 수가 늘어도 자동 배치 */
+.card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+/* 대시보드 차트 2단 배치 */
+.chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 22px;
+}
+.chart-row .panel {
+    margin-bottom: 0;
+}
+@media (max-width: 760px) {
+    .chart-row {
+        grid-template-columns: 1fr;
+    }
+}
