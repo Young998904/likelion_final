@@ -4,6 +4,7 @@ import com.asmanage.domain.*;
 import com.asmanage.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
  * 계정 삭제 기능이 없으므로 첫 로그인 보장을 위해 기본 ADMIN 계정을 반드시 시드한다.
  */
 @Component
+@Order(1)
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 

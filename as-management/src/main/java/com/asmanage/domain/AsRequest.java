@@ -86,10 +86,12 @@ public class AsRequest {
     private List<AsRepairItem> repairItems = new ArrayList<>();
 
     /**
-     * 신규 저장 직전 접수 일시를 자동 기록한다.
+     * 신규 저장 직전 접수 일시를 기록한다(이미 지정돼 있으면 유지 — 더미 데이터 백데이팅 허용).
      */
     @PrePersist
     public void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 }
