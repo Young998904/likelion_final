@@ -21,6 +21,7 @@
 
             <div class="flash success" th:if="${message}" th:text="${message}"></div>
             <div class="flash error" th:if="${error}" th:text="${error}"></div>
+            <p class="notice" th:if="${staffOnly}" style="margin-top:0;">※ 본인에게 배정된 접수 건만 표시됩니다.</p>
 
             <!-- 필터 -->
             <form class="row-form" method="get" th:action="@{/as}" style="margin-bottom:16px;">
@@ -30,7 +31,7 @@
                             th:selected="${status != null and status == s}">상태</option>
                 </select>
                 <input type="text" name="customerKeyword" th:value="${customerKeyword}" placeholder="고객명 검색">
-                <select name="assigneeId">
+                <select name="assigneeId" th:if="${!staffOnly}">
                     <option value="">전체 담당자</option>
                     <option th:each="e : ${employees}" th:value="${e.id}" th:text="${e.name}"
                             th:selected="${assigneeId != null and assigneeId == e.id}">담당자</option>

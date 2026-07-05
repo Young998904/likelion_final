@@ -1,6 +1,8 @@
 package com.asmanage.controller;
 
 import com.asmanage.domain.AsStatus;
+import com.asmanage.domain.Employee;
+import com.asmanage.domain.Role;
 import com.asmanage.dto.AsRequestForm;
 import com.asmanage.repository.EmployeeRepository;
 import com.asmanage.repository.ProductRepository;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Principal;
 
 /**
  * A/S 접수 등록·목록·상세 및 상태 전이 처리(로그인한 직원 전체 이용).
@@ -25,18 +29,25 @@ public class AsRequestController {
     private final EmployeeRepository employeeRepository;
     private final ProductRepository productRepository;
 
-    /** 접수 목록(상태/고객명/담당자 필터). */
+    /** 접수 목록(상태/고객명/담당자 필터). STAFF는 본인 담당 건만 조회된다. */
     @GetMapping
     public String list(@RequestParam(required = false) AsStatus status,
                        @RequestParam(required = false) String customerKeyword,
                        @RequestParam(required = false) Long assigneeId,
-                       Model model) {
-        model.addAttribute("requests", asRequestService.list(status, customerKeyword, assigneeId));
+                       Principal principal, Model model) {
+        Employee me = employeeRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalStateException("로그인 정보를 확인할 수 없습니다."));
+        // STAFF는 담당자 필터를 본인으로 고정한다(관리자는 전체/선택 담당자 조회)
+        boolean staffOnly = me.getRole() == Role.STAFF;
+        Long effectiveAssigneeId = staffOnly ? me.getId() : assigneeId;
+
+        model.addAttribute("requests", asRequestService.list(status, customerKeyword, effectiveAssigneeId));
         model.addAttribute("statuses", AsStatus.values());
         model.addAttribute("employees", employeeRepository.findByActiveTrueOrderByNameAsc());
         model.addAttribute("status", status);
         model.addAttribute("customerKeyword", customerKeyword);
         model.addAttribute("assigneeId", assigneeId);
+        model.addAttribute("staffOnly", staffOnly);
         return "as/list";
     }
 
