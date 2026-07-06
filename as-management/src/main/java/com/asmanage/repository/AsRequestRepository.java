@@ -23,6 +23,9 @@ public interface AsRequestRepository extends JpaRepository<AsRequest, Long> {
     // 접수 목록(최근 접수순)
     List<AsRequest> findAllByOrderByCreatedAtDesc();
 
+    // 고객 포털: 특정 고객의 접수 목록(최근순)
+    List<AsRequest> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
+
     // 삭제 가드용: 해당 고객/제품의 접수 이력 존재 여부
     boolean existsByCustomerId(Long customerId);
     boolean existsByProductId(Long productId);

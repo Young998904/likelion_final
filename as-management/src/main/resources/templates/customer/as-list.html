@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 접수 목록 - 통합 A/S 고객 포털</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<header class="portal-top">
+    <a th:href="@{/customer/home}" class="portal-brand" style="text-decoration:none;color:#fff;">통합 A/S 고객 포털</a>
+    <form th:action="@{/customer/logout}" method="post" style="margin:0;">
+        <button type="submit" class="btn-text">로그아웃</button>
+    </form>
+</header>
+
+<main class="portal-content">
+    <div class="content-head">
+        <h1 class="page-title">내 접수 목록</h1>
+        <a class="btn primary" th:href="@{/customer/as/new}">+ 새 접수</a>
+    </div>
+
+    <div class="flash success" th:if="${message}" th:text="${message}"></div>
+    <div class="flash error" th:if="${error}" th:text="${error}"></div>
+
+    <table class="data-table" th:unless="${requests.isEmpty()}">
+        <thead>
+        <tr><th>접수번호</th><th>제품</th><th>상태</th><th>금액</th><th>접수일</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${requests}" style="cursor:pointer;"
+            th:onclick="|location.href='@{/customer/as/{id}(id=${r.id})}'|">
+            <td th:text="${r.id}">1</td>
+            <td th:text="${r.product.name}">제품</td>
+            <td>
+                <span class="badge" th:classappend="${'s-' + #strings.toLowerCase(r.status)}"
+                      th:text="${r.status.label}">상태</span>
+            </td>
+            <td class="num" th:text="${#numbers.formatInteger(r.totalAmount, 0, 'COMMA')} + '원'">0원</td>
+            <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="table-empty" th:if="${requests.isEmpty()}">접수 내역이 없습니다. 새 접수를 등록해 주세요.</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>새 A/S 접수 - 통합 A/S 고객 포털</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<header class="portal-top">
+    <a th:href="@{/customer/home}" class="portal-brand" style="text-decoration:none;color:#fff;">통합 A/S 고객 포털</a>
+    <form th:action="@{/customer/logout}" method="post" style="margin:0;">
+        <button type="submit" class="btn-text">로그아웃</button>
+    </form>
+</header>
+
+<main class="portal-content">
+    <div class="content-head">
+        <h1 class="page-title">새 A/S 접수</h1>
+    </div>
+
+    <form class="form-card" th:action="@{/customer/as}" method="post">
+        <div class="field">
+            <label>제품 <span class="req">*</span></label>
+            <select name="productId" required>
+                <option value="">제품을 선택하세요</option>
+                <option th:each="p : ${products}" th:value="${p.id}"
+                        th:text="${p.name} + (${p.modelCode} != null ? ' [' + ${p.modelCode} + ']' : '')">제품</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>요청 내용</label>
+            <textarea name="requestContent" rows="3" placeholder="증상이나 요청 사항을 적어주세요"></textarea>
+        </div>
+
+        <!-- 배송지: 회원가입 시 등록한 주소를 기본값으로 불러옴(수정 가능) -->
+        <div class="field">
+            <label>배송지 우편번호</label>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="zipcode" name="deliveryZipcode" th:value="${customer.zipcode}" style="flex:1;">
+                <button type="button" class="btn" onclick="openPostcode()">주소 찾기</button>
+            </div>
+        </div>
+        <div class="field">
+            <label>배송지 주소</label>
+            <input type="text" id="address" name="deliveryAddress" th:value="${customer.address}">
+        </div>
+        <div class="field">
+            <label>배송지 상세주소</label>
+            <input type="text" id="addressDetail" name="deliveryAddressDetail" th:value="${customer.addressDetail}">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn primary">접수하기</button>
+            <a class="btn" th:href="@{/customer/as}">취소</a>
+        </div>
+    </form>
+</main>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    function openPostcode() {
+        new daum.Postcode({
+            oncomplete: function (data) {
+                document.getElementById('zipcode').value = data.zonecode;
+                document.getElementById('address').value = data.roadAddress || data.jibunAddress;
+                document.getElementById('addressDetail').focus();
+            }
+        }).open();
+    }
+</script>
+</body>
+</html>
