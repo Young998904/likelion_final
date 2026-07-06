@@ -29,8 +29,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 로그인 화면, 정적 자원, H2 콘솔은 누구나 접근 가능
-                        .requestMatchers("/login", "/css/**", "/js/**", "/h2-console/**").permitAll()
+                        // 로그인 화면, 정적 자원, H2 콘솔, 고객 포털은 누구나 접근 가능
+                        // (고객 포털은 별도 세션 인터셉터로 인증 처리)
+                        .requestMatchers("/login", "/css/**", "/js/**", "/h2-console/**", "/customer/**").permitAll()
                         // 관리 화면(계정/고객/제품/프리셋 관리)은 ADMIN 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // 나머지는 로그인한 직원만 접근

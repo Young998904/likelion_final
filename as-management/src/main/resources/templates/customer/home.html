@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객 포털 - 통합 A/S</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<header class="portal-top">
+    <span class="portal-brand">통합 A/S 고객 포털</span>
+    <div class="portal-top-right">
+        <span class="portal-user"><span th:text="${customer.name}">고객</span>님</span>
+        <form th:action="@{/customer/logout}" method="post" style="margin:0;">
+            <button type="submit" class="btn-text">로그아웃</button>
+        </form>
+    </div>
+</header>
+
+<main class="portal-main">
+    <h1 class="portal-title">무엇을 도와드릴까요?</h1>
+    <div class="portal-grid">
+        <a class="portal-card" th:href="@{/customer/as/new}">
+            <div class="portal-card-title">새 A/S 접수</div>
+            <div class="portal-card-desc">제품을 선택해 수리를 접수하세요.</div>
+        </a>
+        <a class="portal-card" th:href="@{/customer/as}">
+            <div class="portal-card-title">내 접수 목록</div>
+            <div class="portal-card-desc">접수 현황과 결제를 확인하세요.</div>
+        </a>
+    </div>
+</main>
+</body>
+</html>

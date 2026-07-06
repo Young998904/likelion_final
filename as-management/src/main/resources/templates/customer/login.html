@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객 로그인 - 통합 A/S 고객 포털</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="login-body">
+<div class="login-card">
+    <h1 class="login-title">통합 A/S 고객 포털</h1>
+
+    <p class="alert-error" th:if="${error}" th:text="${error}"></p>
+
+    <form th:action="@{/customer/login}" method="post">
+        <div class="form-group">
+            <label for="phone">전화번호</label>
+            <input type="text" id="phone" name="phone" placeholder="010-1234-5678" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="pin">PIN (숫자 4자리)</label>
+            <input type="password" id="pin" name="pin" maxlength="4" inputmode="numeric" required>
+        </div>
+        <button type="submit" class="btn-primary">로그인</button>
+    </form>
+
+    <p class="login-hint">처음이신가요? <a th:href="@{/customer/signup}">회원가입</a></p>
+</div>
+</body>
+</html>

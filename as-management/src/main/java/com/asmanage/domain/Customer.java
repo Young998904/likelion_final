@@ -37,4 +37,8 @@ public class Customer {
     // 상세 주소
     @Column(length = 255)
     private String addressDetail;
+
+    // 고객 포털 인증용 4자리 PIN(BCrypt 저장). 관리자가 등록한 고객은 null일 수 있음
+    @Column(length = 100)
+    private String pin;
 }

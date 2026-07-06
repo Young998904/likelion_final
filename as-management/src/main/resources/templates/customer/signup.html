@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 통합 A/S 고객 포털</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="login-body">
+<div class="login-card" style="width:400px;">
+    <h1 class="login-title">고객 회원가입</h1>
+
+    <p class="alert-error" th:if="${error}" th:text="${error}"></p>
+
+    <form th:action="@{/customer/signup}" method="post">
+        <div class="form-group">
+            <label for="name">이름</label>
+            <input type="text" id="name" name="name" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="phone">전화번호</label>
+            <input type="text" id="phone" name="phone" placeholder="010-1234-5678" required>
+        </div>
+        <div class="form-group">
+            <label for="pin">PIN (숫자 4자리)</label>
+            <input type="password" id="pin" name="pin" maxlength="4" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+            <label for="zipcode">배송지 우편번호</label>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="zipcode" name="zipcode" style="flex:1;">
+                <button type="button" class="btn-text" onclick="openPostcode()">주소 찾기</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="address">배송지 주소</label>
+            <input type="text" id="address" name="address">
+        </div>
+        <div class="form-group">
+            <label for="addressDetail">상세주소</label>
+            <input type="text" id="addressDetail" name="addressDetail">
+        </div>
+        <button type="submit" class="btn-primary">가입하고 시작하기</button>
+    </form>
+
+    <p class="login-hint">이미 가입하셨나요? <a th:href="@{/customer/login}">로그인</a></p>
+</div>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    function openPostcode() {
+        new daum.Postcode({
+            oncomplete: function (data) {
+                document.getElementById('zipcode').value = data.zonecode;
+                document.getElementById('address').value = data.roadAddress || data.jibunAddress;
+                document.getElementById('addressDetail').focus();
+            }
+        }).open();
+    }
+</script>
+</body>
+</html>
