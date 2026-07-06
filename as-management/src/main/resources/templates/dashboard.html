@@ -46,6 +46,10 @@
                     <div class="summary-label">완료 매출</div>
                     <div class="summary-value v-revenue" th:text="${#numbers.formatInteger(data.totalRevenue, 0, 'COMMA')} + '원'">0원</div>
                 </div>
+                <div class="summary-card">
+                    <div class="summary-label">평균 처리시간</div>
+                    <div class="summary-value" th:text="${data.avgProcessingDays} + '일'">0일</div>
+                </div>
             </section>
 
             <!-- 차트 -->
@@ -58,6 +62,12 @@
                     <h2>월별 접수 / 완료 추이</h2>
                     <div class="chart-box"><canvas id="trendChart"></canvas></div>
                 </div>
+            </section>
+
+            <!-- 제품별 평균 처리시간(오래 걸리는 물품 파악) -->
+            <section class="panel" style="margin-top:18px;">
+                <h2>제품별 평균 처리시간 (접수 → 완료)</h2>
+                <div class="chart-box"><canvas id="productTimeChart"></canvas></div>
             </section>
         </main>
     </div>
@@ -73,6 +83,8 @@
     const months = [[${data.months}]];
     const receivedByMonth = [[${data.receivedByMonth}]];
     const completedByMonth = [[${data.completedByMonth}]];
+    const productNames = [[${data.productNames}]];
+    const avgDaysByProduct = [[${data.avgDaysByProduct}]];
 
     // 상태별 분포(도넛)
     new Chart(document.getElementById('statusChart'), {
@@ -101,6 +113,21 @@
             maintainAspectRatio: false,
             plugins: { legend: { position: 'bottom' } },
             scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+
+    // 제품별 평균 처리시간(가로 막대, 오래 걸리는 순)
+    new Chart(document.getElementById('productTimeChart'), {
+        type: 'bar',
+        data: {
+            labels: productNames,
+            datasets: [{ label: '평균 처리일수', data: avgDaysByProduct, backgroundColor: '#3b4fd4' }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, title: { display: true, text: '일' } } }
         }
     });
 </script>

@@ -8,9 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 대시보드 요약 통계 및 최근 6개월 추이를 계산한다.
@@ -56,7 +60,37 @@ public class DashboardService {
                     .count());
         }
 
+        // 소요시간 분석: 완료 건의 접수→완료 처리시간(일)
+        List<AsRequest> completedList = all.stream()
+                .filter(r -> r.getStatus() == AsStatus.COMPLETED
+                        && r.getCreatedAt() != null && r.getCompletedAt() != null)
+                .toList();
+        double avgProcessingDays = round1(completedList.stream()
+                .mapToDouble(this::processingDays).average().orElse(0));
+
+        // 제품별 평균 처리일수(오래 걸리는 순 정렬)
+        Map<String, List<AsRequest>> byProduct = completedList.stream()
+                .collect(Collectors.groupingBy(r -> r.getProduct().getName()));
+        List<Map.Entry<String, Double>> productAvg = byProduct.entrySet().stream()
+                .map(e -> Map.entry(e.getKey(),
+                        round1(e.getValue().stream().mapToDouble(this::processingDays).average().orElse(0))))
+                .sorted(Comparator.comparingDouble(Map.Entry<String, Double>::getValue).reversed())
+                .toList();
+        List<String> productNames = productAvg.stream().map(Map.Entry::getKey).toList();
+        List<Double> avgDaysByProduct = productAvg.stream().map(Map.Entry::getValue).toList();
+
         return new DashboardData(total, received, repairing, awaitingPayment, awaitingDelivery,
-                completed, unpaid, totalRevenue, months, receivedByMonth, completedByMonth);
+                completed, unpaid, totalRevenue, months, receivedByMonth, completedByMonth,
+                avgProcessingDays, productNames, avgDaysByProduct);
+    }
+
+    /** 접수→완료 처리시간(일). */
+    private double processingDays(AsRequest request) {
+        return Duration.between(request.getCreatedAt(), request.getCompletedAt()).toMinutes() / 1440.0;
+    }
+
+    /** 소수 첫째 자리 반올림. */
+    private double round1(double value) {
+        return Math.round(value * 10) / 10.0;
     }
 }
