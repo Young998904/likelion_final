@@ -84,6 +84,8 @@ public class CustomerAsController {
         model.addAttribute("request", request);
         model.addAttribute("notifications", asRequestService.getNotifications(id));
         model.addAttribute("portoneEnabled", paymentService.isPortOneEnabled());
+        model.addAttribute("storeId", paymentService.getStoreId());
+        model.addAttribute("channelKey", paymentService.getChannelKey());
         return "customer/as-detail";
     }
 
@@ -103,6 +105,27 @@ public class CustomerAsController {
             ra.addFlashAttribute("message", "결제가 완료되었습니다. 수리를 시작합니다.");
         } catch (IllegalStateException e) {
             ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/customer/as/" + id;
+    }
+
+    /**
+     * PortOne 결제 완료 복귀 처리(카카오페이 리다이렉트/팝업 성공 후 호출).
+     * paymentId로 서버가 결제를 검증한 뒤 확정한다.
+     */
+    @GetMapping("/{id}/pay/complete")
+    public String payComplete(@PathVariable Long id, @RequestParam String paymentId,
+                              HttpSession session, RedirectAttributes ra) {
+        AsRequest request = asRequestService.getDetail(id);
+        if (!request.getCustomer().getId().equals(CustomerSession.getId(session))) {
+            ra.addFlashAttribute("error", "접근 권한이 없습니다.");
+            return "redirect:/customer/as";
+        }
+        try {
+            paymentService.verifyAndConfirm(id, paymentId);
+            ra.addFlashAttribute("message", "결제가 완료되었습니다. 수리를 시작합니다.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "결제 확인 실패: " + e.getMessage());
         }
         return "redirect:/customer/as/" + id;
     }

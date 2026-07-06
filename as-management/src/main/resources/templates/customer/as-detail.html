@@ -41,9 +41,13 @@
     <!-- 입금대기면 결제 진행 -->
     <div class="pay-box" th:if="${request.status.name() == 'AWAITING_PAYMENT'}">
         <div>청구 금액 <b th:text="${#numbers.formatInteger(request.totalAmount, 0, 'COMMA')} + '원'">0원</b> 결제가 필요합니다.</div>
-        <form th:action="@{/customer/as/{id}/pay(id=${request.id})}" method="post" style="margin-top:10px;">
+        <!-- PortOne 연동 시: 카카오페이 결제창 -->
+        <button th:if="${portoneEnabled}" type="button" class="btn primary" style="margin-top:10px;"
+                onclick="payWithKakao()">카카오페이로 결제</button>
+        <!-- 미연동 시: Mock 결제 -->
+        <form th:unless="${portoneEnabled}" th:action="@{/customer/as/{id}/pay(id=${request.id})}" method="post" style="margin-top:10px;">
             <button type="submit" class="btn primary">결제하기</button>
-            <span th:if="${!portoneEnabled}" style="font-size:12px;color:#a37a2e;margin-left:8px;">(테스트 결제 · Mock)</span>
+            <span style="font-size:12px;color:#a37a2e;margin-left:8px;">(테스트 결제 · Mock)</span>
         </form>
     </div>
 
@@ -91,5 +95,39 @@
         </div>
     </div>
 </main>
+
+<!-- PortOne 연동 시에만 로드: 카카오페이 결제 -->
+<script th:if="${portoneEnabled}" src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+<script th:if="${portoneEnabled}" th:inline="javascript">
+    const STORE_ID = [[${storeId}]];
+    const CHANNEL_KEY = [[${channelKey}]];
+    const REQ_ID = [[${request.id}]];
+    const AMOUNT = [[${request.totalAmount}]];
+
+    async function payWithKakao() {
+        const paymentId = "as-" + REQ_ID + "-" + Date.now();
+        try {
+            const res = await PortOne.requestPayment({
+                storeId: STORE_ID,
+                channelKey: CHANNEL_KEY,
+                paymentId: paymentId,
+                orderName: "A/S 수리비 #" + REQ_ID,
+                totalAmount: AMOUNT,
+                currency: "CURRENCY_KRW",
+                payMethod: "EASY_PAY",
+                // 모바일 리다이렉트 복귀 주소(데스크톱은 팝업 후 아래 이동으로 처리)
+                redirectUrl: window.location.origin + "/customer/as/" + REQ_ID + "/pay/complete"
+            });
+            if (res && res.code != null) {
+                alert("결제 실패: " + res.message);
+                return;
+            }
+            // 결제창(팝업) 성공 → 서버 검증 페이지로 이동
+            window.location.href = "/customer/as/" + REQ_ID + "/pay/complete?paymentId=" + encodeURIComponent(res.paymentId);
+        } catch (e) {
+            alert("결제 중 오류가 발생했습니다: " + e.message);
+        }
+    }
+</script>
 </body>
 </html>
