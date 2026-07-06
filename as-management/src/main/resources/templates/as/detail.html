@@ -29,8 +29,8 @@
             <!-- 상태 진행 -->
             <div class="stepline">
                 <div class="step" th:classappend="${request.status.ordinal() >= 0} ? 'done'">접수</div>
-                <div class="step" th:classappend="${request.status.ordinal() >= 1} ? 'done'">수리중</div>
-                <div class="step" th:classappend="${request.status.ordinal() >= 2} ? 'done'">입금대기</div>
+                <div class="step" th:classappend="${request.status.ordinal() >= 1} ? 'done'">입금대기</div>
+                <div class="step" th:classappend="${request.status.ordinal() >= 2} ? 'done'">수리중</div>
                 <div class="step" th:classappend="${request.status.ordinal() >= 3} ? 'done'">배송대기</div>
                 <div class="step" th:classappend="${request.status.ordinal() >= 4} ? 'done'">완료</div>
             </div>
@@ -55,12 +55,12 @@
                     <div class="panel">
                         <h2>수리내역</h2>
                         <table class="data-table" th:unless="${request.repairItems.isEmpty()}">
-                            <thead><tr><th>항목</th><th>금액</th><th th:if="${request.status.ordinal() <= 1}"></th></tr></thead>
+                            <thead><tr><th>항목</th><th>금액</th><th th:if="${request.status.name() == 'RECEIVED'}"></th></tr></thead>
                             <tbody>
                             <tr th:each="item : ${request.repairItems}">
                                 <td th:text="${item.name}">항목</td>
                                 <td class="num" th:text="${#numbers.formatInteger(item.price, 0, 'COMMA')} + '원'">0원</td>
-                                <td class="actions" th:if="${request.status.ordinal() <= 1}">
+                                <td class="actions" th:if="${request.status.name() == 'RECEIVED'}">
                                     <form class="inline-form" method="post"
                                           th:action="@{/as/{id}/items/{itemId}/delete(id=${request.id}, itemId=${item.id})}">
                                         <button type="submit" class="btn sm danger">삭제</button>
@@ -76,8 +76,8 @@
                             <span class="total-amount" th:text="${#numbers.formatInteger(request.totalAmount, 0, 'COMMA')} + '원'">0원</span>
                         </div>
 
-                        <!-- 수리내역 추가(접수/수리중 상태에서만) -->
-                        <div th:if="${request.status.ordinal() <= 1}">
+                        <!-- 수리내역(견적) 추가(접수 상태에서만) -->
+                        <div th:if="${request.status.name() == 'RECEIVED'}">
                             <form class="row-form" method="post" th:action="@{/as/{id}/items/preset(id=${request.id})}">
                                 <select name="presetId" required>
                                     <option value="">프리셋 선택</option>
@@ -111,14 +111,14 @@
 
                         <!-- 상태 전이 액션 -->
                         <div style="margin-top:14px;" th:switch="${request.status.name()}">
-                            <form th:case="'RECEIVED'" method="post" th:action="@{/as/{id}/start(id=${request.id})}">
-                                <button type="submit" class="btn primary">수리 시작 (→ 수리중)</button>
-                            </form>
-                            <form th:case="'REPAIRING'" method="post" th:action="@{/as/{id}/request-payment(id=${request.id})}">
-                                <button type="submit" class="btn primary">입금 요청 (→ 입금대기)</button>
+                            <form th:case="'RECEIVED'" method="post" th:action="@{/as/{id}/request-payment(id=${request.id})}">
+                                <button type="submit" class="btn primary">비용 청구 (→ 입금대기)</button>
                             </form>
                             <form th:case="'AWAITING_PAYMENT'" method="post" th:action="@{/as/{id}/confirm-payment(id=${request.id})}">
-                                <button type="submit" class="btn primary">입금 확인 (→ 배송대기)</button>
+                                <button type="submit" class="btn primary">입금 확인 (→ 수리중)</button>
+                            </form>
+                            <form th:case="'REPAIRING'" method="post" th:action="@{/as/{id}/complete-repair(id=${request.id})}">
+                                <button type="submit" class="btn primary">수리 완료 (→ 배송대기)</button>
                             </form>
                             <div th:case="'AWAITING_DELIVERY'">
                                 <form class="row-form" method="post" th:action="@{/as/{id}/tracking(id=${request.id})}">

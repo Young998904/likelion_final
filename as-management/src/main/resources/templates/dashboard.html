@@ -23,12 +23,12 @@
                     <div class="summary-value" th:text="${data.total}">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-label">수리중</div>
-                    <div class="summary-value v-repairing" th:text="${data.repairing}">0</div>
-                </div>
-                <div class="summary-card">
                     <div class="summary-label">입금대기</div>
                     <div class="summary-value v-awaiting_payment" th:text="${data.awaitingPayment}">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">수리중</div>
+                    <div class="summary-value v-repairing" th:text="${data.repairing}">0</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">배송대기</div>
@@ -67,7 +67,7 @@
 <script th:inline="javascript">
     // 서버에서 전달된 통계 데이터
     const statusCounts = [
-        [[${data.received}]], [[${data.repairing}]], [[${data.awaitingPayment}]],
+        [[${data.received}]], [[${data.awaitingPayment}]], [[${data.repairing}]],
         [[${data.awaitingDelivery}]], [[${data.completed}]]
     ];
     const months = [[${data.months}]];
@@ -78,10 +78,10 @@
     new Chart(document.getElementById('statusChart'), {
         type: 'doughnut',
         data: {
-            labels: ['접수', '수리중', '입금대기', '배송대기', '완료'],
+            labels: ['접수', '입금대기', '수리중', '배송대기', '완료'],
             datasets: [{
                 data: statusCounts,
-                backgroundColor: ['#c5cbd6', '#8b7ef0', '#e6b45a', '#5a92e0', '#3fbf8f']
+                backgroundColor: ['#c5cbd6', '#e6b45a', '#8b7ef0', '#5a92e0', '#3fbf8f']
             }]
         },
         options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }

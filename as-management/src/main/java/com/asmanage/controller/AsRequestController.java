@@ -112,24 +112,24 @@ public class AsRequestController {
         return "redirect:/as/" + id;
     }
 
-    /** 접수 → 수리중. */
-    @PostMapping("/{id}/start")
-    public String start(@PathVariable Long id, RedirectAttributes ra) {
-        run(() -> asRequestService.startRepair(id), ra, "수리를 시작했습니다.");
-        return "redirect:/as/" + id;
-    }
-
-    /** 수리중 → 입금대기. */
+    /** 접수 → 입금대기(청구). */
     @PostMapping("/{id}/request-payment")
     public String requestPayment(@PathVariable Long id, RedirectAttributes ra) {
-        run(() -> asRequestService.requestPayment(id), ra, "입금을 요청했습니다.");
+        run(() -> asRequestService.requestPayment(id), ra, "비용을 청구했습니다.");
         return "redirect:/as/" + id;
     }
 
-    /** 입금대기 → 배송대기. */
+    /** 입금대기 → 수리중(입금 확인). */
     @PostMapping("/{id}/confirm-payment")
     public String confirmPayment(@PathVariable Long id, RedirectAttributes ra) {
-        run(() -> asRequestService.confirmPayment(id), ra, "입금을 확인했습니다.");
+        run(() -> asRequestService.confirmPayment(id), ra, "입금을 확인했습니다. 수리를 시작합니다.");
+        return "redirect:/as/" + id;
+    }
+
+    /** 수리중 → 배송대기(수리 완료). */
+    @PostMapping("/{id}/complete-repair")
+    public String completeRepair(@PathVariable Long id, RedirectAttributes ra) {
+        run(() -> asRequestService.completeRepair(id), ra, "수리를 완료했습니다.");
         return "redirect:/as/" + id;
     }
 

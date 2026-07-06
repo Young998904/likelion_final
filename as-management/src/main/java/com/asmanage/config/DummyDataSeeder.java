@@ -171,8 +171,13 @@ public class DummyDataSeeder implements CommandLineRunner {
             }
             request.setTotalAmount(total);
 
+            // 선불 모델: 수리중 이상이면 이미 결제된 상태
+            boolean paid = status.ordinal() >= AsStatus.REPAIRING.ordinal();
             boolean reachedDelivery = status == AsStatus.AWAITING_DELIVERY || status == AsStatus.COMPLETED;
-            request.setPaid(reachedDelivery);
+            request.setPaid(paid);
+            if (paid) {
+                request.setPaidAt(createdAt.plusDays(1));
+            }
             if (reachedDelivery) {
                 request.setCourier(pick(couriers));
                 request.setTrackingNo(String.valueOf(100000000L + random.nextInt(900000000)));
@@ -187,18 +192,26 @@ public class DummyDataSeeder implements CommandLineRunner {
 
             asRequestRepository.save(request);
 
-            // 알림 로그(도달한 단계까지)
+            // 알림 로그(도달한 단계까지): 접수 → 비용청구 → 결제완료 → 배송 → 완료
             addNotification(request, NotificationType.RECEIPT,
                     "접수가 등록되었습니다. (고객: " + customer.getName() + ", 제품: " + product.getName() + ")", createdAt);
             if (status.ordinal() >= AsStatus.AWAITING_PAYMENT.ordinal()) {
                 addNotification(request, NotificationType.PAYMENT_REQUEST,
-                        "입금 요청되었습니다. 청구금액 " + total + "원", createdAt.plusDays(1));
+                        "비용이 청구되었습니다. 청구금액 " + total + "원", createdAt.plusDays(1));
+            }
+            if (paid) {
+                addNotification(request, NotificationType.PAYMENT_DONE,
+                        "결제가 완료되었습니다. 수리를 시작합니다.", createdAt.plusDays(1));
             }
             if (reachedDelivery) {
                 LocalDateTime deliveredAt = request.getCompletedAt() != null
                         ? request.getCompletedAt() : createdAt.plusDays(2);
                 addNotification(request, NotificationType.DELIVERY,
                         "배송이 시작되었습니다. 송장번호 " + request.getTrackingNo(), deliveredAt);
+            }
+            if (status == AsStatus.COMPLETED) {
+                addNotification(request, NotificationType.COMPLETE,
+                        "A/S 처리가 완료되었습니다.", request.getCompletedAt());
             }
         }
     }

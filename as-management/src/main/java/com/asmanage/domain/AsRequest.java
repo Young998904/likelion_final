@@ -74,6 +74,13 @@ public class AsRequest {
     @Column(nullable = false)
     private boolean paid = false;
 
+    // 결제 완료 일시
+    private LocalDateTime paidAt;
+
+    // 결제 거래 식별자(PortOne 연동 시 저장, Mock/수동 확인 시 null)
+    @Column(length = 100)
+    private String paymentRef;
+
     // 접수 일시
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

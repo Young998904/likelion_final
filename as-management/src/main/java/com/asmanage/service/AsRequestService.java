@@ -125,36 +125,50 @@ public class AsRequestService {
         recalcTotal(request);
     }
 
-    /** 접수 → 수리중. 담당자가 지정되어 있어야 한다. */
+    /**
+     * 접수 → 입금대기(청구). 선불 모델이므로 담당자 지정과 수리내역(견적)이 있어야 청구한다.
+     */
     @Transactional
-    public void startRepair(Long id) {
+    public void requestPayment(Long id) {
         AsRequest request = findById(id);
         requireStatus(request, AsStatus.RECEIVED);
         if (request.getAssignee() == null) {
             throw new IllegalStateException("담당자를 먼저 지정하세요.");
         }
-        request.setStatus(AsStatus.REPAIRING);
-    }
-
-    /** 수리중 → 입금대기. 수리내역이 1건 이상 있어야 하며 입금요청 알림을 기록한다. */
-    @Transactional
-    public void requestPayment(Long id) {
-        AsRequest request = findById(id);
-        requireStatus(request, AsStatus.REPAIRING);
         if (request.getRepairItems().isEmpty()) {
-            throw new IllegalStateException("수리내역을 1건 이상 입력하세요.");
+            throw new IllegalStateException("수리내역(견적)을 1건 이상 입력하세요.");
         }
         request.setStatus(AsStatus.AWAITING_PAYMENT);
         writeNotification(request, NotificationType.PAYMENT_REQUEST,
-                "입금 요청되었습니다. 청구금액 " + request.getTotalAmount() + "원");
+                "비용이 청구되었습니다. 청구금액 " + request.getTotalAmount() + "원");
     }
 
-    /** 입금대기 → 배송대기. paid=true 설정과 상태 전이를 한 트랜잭션으로 처리. */
+    /** 입금대기 → 수리중(결제/입금확인). 관리자 수동 확인 시 사용(거래식별자 없음). */
     @Transactional
     public void confirmPayment(Long id) {
+        confirmPayment(id, null);
+    }
+
+    /**
+     * 입금대기 → 수리중(결제 확인). paid·paidAt 기록 후 수리를 시작하고 결제완료 알림을 남긴다.
+     * PortOne 결제 시 거래식별자(paymentRef)를 함께 저장한다.
+     */
+    @Transactional
+    public void confirmPayment(Long id, String paymentRef) {
         AsRequest request = findById(id);
         requireStatus(request, AsStatus.AWAITING_PAYMENT);
         request.setPaid(true);
+        request.setPaidAt(LocalDateTime.now());
+        request.setPaymentRef(paymentRef);
+        request.setStatus(AsStatus.REPAIRING);
+        writeNotification(request, NotificationType.PAYMENT_DONE, "결제가 완료되었습니다. 수리를 시작합니다.");
+    }
+
+    /** 수리중 → 배송대기(수리 완료). */
+    @Transactional
+    public void completeRepair(Long id) {
+        AsRequest request = findById(id);
+        requireStatus(request, AsStatus.REPAIRING);
         request.setStatus(AsStatus.AWAITING_DELIVERY);
     }
 
@@ -172,13 +186,14 @@ public class AsRequestService {
                 "배송이 시작되었습니다. 송장번호 " + trackingNo);
     }
 
-    /** 배송대기 → 완료. 송장은 필수 조건이 아니다. */
+    /** 배송대기 → 완료. 송장은 필수 조건이 아니다. 완료 알림을 남긴다. */
     @Transactional
     public void complete(Long id) {
         AsRequest request = findById(id);
         requireStatus(request, AsStatus.AWAITING_DELIVERY);
         request.setStatus(AsStatus.COMPLETED);
         request.setCompletedAt(LocalDateTime.now());
+        writeNotification(request, NotificationType.COMPLETE, "A/S 처리가 완료되었습니다.");
     }
 
     // ===== 내부 헬퍼 =====
@@ -188,11 +203,11 @@ public class AsRequestService {
                 .orElseThrow(() -> new IllegalArgumentException("접수 건을 찾을 수 없습니다."));
     }
 
-    /** 수리내역 수정이 허용되는 상태(접수/수리중)인지 확인 후 반환. */
+    /** 수리내역(견적) 수정이 허용되는 상태(접수)인지 확인 후 반환. */
     private AsRequest getEditable(Long id) {
         AsRequest request = findById(id);
-        if (request.getStatus() != AsStatus.RECEIVED && request.getStatus() != AsStatus.REPAIRING) {
-            throw new IllegalStateException("입금 요청 이후에는 수리내역을 변경할 수 없습니다.");
+        if (request.getStatus() != AsStatus.RECEIVED) {
+            throw new IllegalStateException("비용 청구 이후에는 수리내역을 변경할 수 없습니다.");
         }
         return request;
     }
