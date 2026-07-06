@@ -11,6 +11,8 @@ import com.asmanage.service.CustomerPortalService;
 import com.asmanage.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -107,6 +109,17 @@ public class CustomerAsController {
             ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/customer/as/" + id;
+    }
+
+    /** 현재 상태 조회(JSON) — 고객 화면 폴링용. 본인 소유만. */
+    @GetMapping("/{id}/status")
+    @ResponseBody
+    public Map<String, String> status(@PathVariable Long id, HttpSession session) {
+        AsRequest request = asRequestService.getDetail(id);
+        if (!request.getCustomer().getId().equals(CustomerSession.getId(session))) {
+            return Map.of("status", "FORBIDDEN", "label", "");
+        }
+        return Map.of("status", request.getStatus().name(), "label", request.getStatus().getLabel());
     }
 
     /**

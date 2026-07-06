@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.Map;
 
 /**
  * A/S 접수 등록·목록·상세 및 상태 전이 처리(로그인한 직원 전체 이용).
@@ -81,6 +82,14 @@ public class AsRequestController {
         model.addAttribute("presets", repairPresetRepository.findAll());
         model.addAttribute("employees", employeeRepository.findByActiveTrueOrderByNameAsc());
         return "as/detail";
+    }
+
+    /** 현재 상태 조회(JSON) — 화면 폴링용. */
+    @GetMapping("/{id}/status")
+    @ResponseBody
+    public Map<String, String> status(@PathVariable Long id) {
+        var request = asRequestService.getDetail(id);
+        return Map.of("status", request.getStatus().name(), "label", request.getStatus().getLabel());
     }
 
     /** 담당자 지정. */

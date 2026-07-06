@@ -129,5 +129,23 @@
         }
     }
 </script>
+<!-- 상태 변경 실시간 감지(폴링): 관리자가 진행하면 알림 후 새로고침 -->
+<script th:inline="javascript">
+    (function () {
+        const RID = [[${request.id}]];
+        const CURRENT = [[${request.status.name()}]];
+        setInterval(async function () {
+            try {
+                const r = await fetch('/customer/as/' + RID + '/status', { headers: { 'Accept': 'application/json' } });
+                if (!r.ok) return;
+                const d = await r.json();
+                if (d.status && d.status !== 'FORBIDDEN' && d.status !== CURRENT) {
+                    alert("접수 상태가 '" + d.label + "'(으)로 변경되었습니다.");
+                    location.reload();
+                }
+            } catch (e) { /* 네트워크 일시 오류는 무시 */ }
+        }, 4000);
+    })();
+</script>
 </body>
 </html>
