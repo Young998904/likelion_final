@@ -83,6 +83,12 @@ public class DummyDataSeeder implements CommandLineRunner {
                 {"48058", "부산시 해운대구 센텀중앙로 90", "1203호"}
         };
         List<Customer> list = new ArrayList<>();
+        // 포털 로그인 가능한 고정 샘플 고객(전화번호 + PIN 4자리). QA/시연용
+        list.add(savePortalCustomer("김고객", "010-1234-5678", "1234",
+                "06236", "서울시 강남구 테헤란로 152", "3층"));
+        list.add(savePortalCustomer("이용자", "010-2345-6789", "1234",
+                "13529", "경기도 성남시 분당구 판교역로 235", "8층"));
+
         for (int i = 0; i < 10; i++) {
             Customer c = new Customer();
             c.setName(surnames[i % surnames.length] + givenNames[i % givenNames.length]);
@@ -94,6 +100,19 @@ public class DummyDataSeeder implements CommandLineRunner {
             list.add(customerRepository.save(c));
         }
         return list;
+    }
+
+    /** 포털 로그인 가능한 고객 생성(PIN은 BCrypt 저장). */
+    private Customer savePortalCustomer(String name, String phone, String pin,
+                                        String zipcode, String address, String addressDetail) {
+        Customer c = new Customer();
+        c.setName(name);
+        c.setPhone(phone);
+        c.setPin(passwordEncoder.encode(pin));
+        c.setZipcode(zipcode);
+        c.setAddress(address);
+        c.setAddressDetail(addressDetail);
+        return customerRepository.save(c);
     }
 
     /** 더미 제품 6종. */
@@ -135,8 +154,10 @@ public class DummyDataSeeder implements CommandLineRunner {
                 "버튼이 눌리지 않아요", "과열됩니다", "블루투스 연결이 안 돼요", "배터리가 빨리 닳아요"};
         String[] couriers = {"CJ대한통운", "한진택배", "롯데택배", "우체국택배"};
 
-        for (AsStatus status : plan) {
-            Customer customer = pick(customers);
+        for (int idx = 0; idx < plan.size(); idx++) {
+            AsStatus status = plan.get(idx);
+            // 앞쪽 6건은 포털 고정 고객(목록 0,1번)에게 번갈아 배정해 조회 이력을 확보
+            Customer customer = (idx < 6) ? customers.get(idx % 2) : pick(customers);
             Product product = pick(products);
             LocalDateTime createdAt = LocalDateTime.now()
                     .minusDays(random.nextInt(170)).minusHours(random.nextInt(24));
