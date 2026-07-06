@@ -8,6 +8,7 @@ import com.asmanage.repository.ProductRepository;
 import com.asmanage.security.CustomerSession;
 import com.asmanage.service.AsRequestService;
 import com.asmanage.service.CustomerPortalService;
+import com.asmanage.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -27,6 +28,7 @@ public class CustomerAsController {
     private final CustomerPortalService customerPortalService;
     private final ProductRepository productRepository;
     private final AsRequestRepository asRequestRepository;
+    private final PaymentService paymentService;
 
     /** 내 접수 목록. */
     @GetMapping
@@ -81,6 +83,28 @@ public class CustomerAsController {
         }
         model.addAttribute("request", request);
         model.addAttribute("notifications", asRequestService.getNotifications(id));
+        model.addAttribute("portoneEnabled", paymentService.isPortOneEnabled());
         return "customer/as-detail";
     }
+
+    /**
+     * 결제. 본인 소유·입금대기 건에 대해 결제를 진행한다.
+     * PortOne 키 미설정 시 Mock 결제로 즉시 성공 → 입금대기→수리중 자동 전이.
+     */
+    @PostMapping("/{id}/pay")
+    public String pay(@PathVariable Long id, HttpSession session, RedirectAttributes ra) {
+        AsRequest request = asRequestService.getDetail(id);
+        if (!request.getCustomer().getId().equals(CustomerSession.getId(session))) {
+            ra.addFlashAttribute("error", "접근 권한이 없습니다.");
+            return "redirect:/customer/as";
+        }
+        try {
+            paymentService.payByMock(id);
+            ra.addFlashAttribute("message", "결제가 완료되었습니다. 수리를 시작합니다.");
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/customer/as/" + id;
+    }
 }
+

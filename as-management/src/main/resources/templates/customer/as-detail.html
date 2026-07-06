@@ -38,10 +38,13 @@
         <div class="step" th:classappend="${request.status.ordinal() >= 4} ? 'done'">완료</div>
     </div>
 
-    <!-- 입금대기면 결제 안내(결제 기능은 다음 단계에서 연결) -->
+    <!-- 입금대기면 결제 진행 -->
     <div class="pay-box" th:if="${request.status.name() == 'AWAITING_PAYMENT'}">
-        청구 금액 <b th:text="${#numbers.formatInteger(request.totalAmount, 0, 'COMMA')} + '원'">0원</b> 결제가 필요합니다.
-        <span style="color:#a37a2e;">(결제 기능 준비 중)</span>
+        <div>청구 금액 <b th:text="${#numbers.formatInteger(request.totalAmount, 0, 'COMMA')} + '원'">0원</b> 결제가 필요합니다.</div>
+        <form th:action="@{/customer/as/{id}/pay(id=${request.id})}" method="post" style="margin-top:10px;">
+            <button type="submit" class="btn primary">결제하기</button>
+            <span th:if="${!portoneEnabled}" style="font-size:12px;color:#a37a2e;margin-left:8px;">(테스트 결제 · Mock)</span>
+        </form>
     </div>
 
     <div class="panel">

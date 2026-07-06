@@ -34,6 +34,14 @@ spring:
   thymeleaf:
     cache: false
 
+# 결제(PortOne V2) 설정.
+# 세 값이 비어 있으면 Mock 결제로 자동 폴백한다(dev에서 키 없이 결제 흐름 동작).
+# 실제 연동 시 키는 환경변수로 주입하고 깃에는 올리지 않는다.
+portone:
+  store-id: ${PORTONE_STORE_ID:}
+  channel-key: ${PORTONE_CHANNEL_KEY:}
+  api-secret: ${PORTONE_API_SECRET:}
+
 # (참고) 추후 로컬 MySQL로 전환 시 위 datasource를 아래로 교체
 #   url: jdbc:mysql://localhost:3306/as_management?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 #   driver-class-name: com.mysql.cj.jdbc.Driver
