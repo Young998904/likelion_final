@@ -26,3 +26,8 @@
 
 # ===== 로그 =====
 *.log
+
+# 별도 독립 저장소·참고자료 (이 repo에서 추적 안 함)
+expo-platform/
+repairon/
+team-docs/
