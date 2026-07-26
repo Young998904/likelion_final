@@ -31,3 +31,11 @@
 expo-platform/
 repairon/
 team-docs/
+
+# KDT 자산 — git에 넣지 않고 현상 보존 (2026-07-19 결정, 개인정보 확인 전 커밋 금지)
+/starter-kit/
+/starter-kit-가이드/
+/starter-kit-스크린샷/
+/개인프로젝트-성과자료/
+/백엔드_스타터킷_v1.0.zip
+/백엔드_스타터킷_v1.1.zip
